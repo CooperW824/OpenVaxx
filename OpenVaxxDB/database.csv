@@ -1,0 +1,1 @@
+id, userID, username, recip/orgName, passwordHash, vaccinetype, firstDose, secondDose, thirdDose, lastScanTime, lastLocation

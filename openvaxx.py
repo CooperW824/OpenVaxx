@@ -1,4 +1,5 @@
 
+from PySimpleGUI.PySimpleGUI import Button, Window
 from OpenVaxxDB import business as ovb
 from OpenVaxxDB import distributor as ovd
 from OpenVaxxDB import recipient as ovr
@@ -45,16 +46,11 @@ aboutPage = [[
 ]]
 
 
-recipientPage = [[]]
-distributorMain = [[]]
+
 distributorInput = [[]]
-businessMain = [[]]
 businessOut = [[]]
 # -- New Window Functions -- 
 
-def make_window(title, layout, modal, bgColor, size):
-    pgLayout = layout
-    return sg.Window(title, pgLayout, modal, background_color=bgColor1, size=size )
 
 def open_login_window():
     recipentLogin = [[sg.Text("Login as a Recipient", background_color=bgColor2, text_color=textColor1, font="Arial", size=(23,1))], 
@@ -68,8 +64,8 @@ def open_login_window():
 
     distributorLogin = [[sg.Text("Login as a Distributor", background_color=bgColor2, text_color=textColor1, font="Arial", size=(23,1))], 
                 [sg.HorizontalSeparator(pad=(5, 2))],
-                [sg.Text("Username:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
-                [sg.Column([[sg.Input("Username", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
+                [sg.Text("Distribution Site:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
+                [sg.Column([[sg.Input("Distribution Site", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
                 [sg.HorizontalSeparator(pad=(1, 10))],
                 [sg.Text("Password:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
                 [sg.Column([[sg.Input("", background_color=bgColor1, text_color=textColor2, password_char="*", size=(23,1))]], background_color=bgColor2)],
@@ -77,15 +73,15 @@ def open_login_window():
 
     businessLogin = [[sg.Text("Login as a Business", background_color=bgColor2, text_color=textColor1, font="Arial", size=(23,1))], 
                 [sg.HorizontalSeparator(pad=(5, 2))],
-                [sg.Text("Username:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
-                [sg.Column([[sg.Input("Username", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
+                [sg.Text("Business Name:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
+                [sg.Column([[sg.Input("Business Name", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
                 [sg.HorizontalSeparator(pad=(1, 10))],
                 [sg.Text("Password:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
                 [sg.Column([[sg.Input("", background_color=bgColor1, text_color=textColor2, password_char="*", size=(23,1))]], background_color=bgColor2)],
                 [sg.Column([[sg.Button("Login As Business", button_color=buttonBgColor)]],background_color=bgColor1,  element_justification="center", justification="center", pad=((0, 40), (5,5)))]]
 
     loginPage = [
-            [sg.Column([[sg.Text("Login to your OpenVaxx Account", font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="center", element_justification="Center" ),
+            [sg.Column([[sg.Text("Login to your OpenVaxx Account", font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="Center" ),
             sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
             [sg.Column(recipentLogin, background_color=bgColor2, size=(225, 275)), sg.VSeparator(color=bgColor2), sg.Column(distributorLogin, background_color=bgColor2, size=(225, 275)), sg.VSeparator(color=bgColor2), sg.Column(businessLogin, background_color=bgColor2, size=(225, 275))]
             ]
@@ -94,11 +90,35 @@ def open_login_window():
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
-            break    
-    window.close()
+            window.close()
+            break 
+        elif eventlocale == "Login As Recipient":
+            window.close()
+            # check username and password
+            # raise message box if password is wrong
+            open_recipient_page("{{ USERNAME }}")
+            break  
+        elif eventlocale == "Login As Distributor":
+            window.close() 
+            #check credentials 
+            open_distributor_main_page("{{ distributor }}")
+            break
+        elif eventlocale == "Login As Business":
+            window.Close()
+            #add data to database
+            open_business_main_page("{{ Business }}")
+            break
 
 def open_recipient_page(username):
-    window = sg.Window("OpenVaxx, Welcome " + username, recipientPage)
+    recipientPage = [
+            [sg.Column([[sg.Text("Welcome " + username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+            sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
+            [sg.HorizontalSeparator(bgColor2, (10, 5))],
+            [sg.Text("Your Personal QR Code, have businesses scan this to see your anonomous vaccination status.", background_color=bgColor2, text_color=textColor1, justification="center")],
+            [sg.Column([[sg.Image("OpenVaxxDB/qrcode.png",size=(300, 300), background_color=bgColor1)]], justification="center", element_justification="center", background_color=bgColor1)],
+            [sg.Column([[sg.Text("Choose a Place to save your QR Code: ", background_color=bgColor2, text_color=textColor1), sg.FolderBrowse("Browse Folders", key="qrCodeLoc", button_color=buttonBgColor), sg.Button("Save QR Code", button_color=buttonBgColor)]], bgColor2, justification="center", element_justification="center")]
+            ]
+    window = sg.Window("OpenVaxx, Welcome " + username, recipientPage, background_color=bgColor1)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
@@ -107,7 +127,11 @@ def open_recipient_page(username):
     window.close()
 
 def open_distributor_main_page(distributor):
-    window = sg.Window(distributor, distributorMain, modal=True)
+    distributorMain = [[sg.Column([[sg.Text("Welcome {{ distributor }}", font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+                    sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
+                    [sg.Column([[sg.Text("Scan a QR Code to add/update a users vaccination status.", background_color=bgColor2, text_color=textColor1)]], background_color=bgColor2, element_justification="center", justification="center")],
+                    [sg.Column([[sg.Button("Click Here to Scan QR Code", button_color=buttonBgColor)]], background_color=bgColor1, justification="center", element_justification="center")]]
+    window = sg.Window("Welcome " + distributor, distributorMain, modal=True, background_color=bgColor1)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
@@ -117,6 +141,19 @@ def open_distributor_main_page(distributor):
 
 def open_distributor_input_page(distributor):
     window = sg.Window(distributor + "Vaccine Info Input", distributorInput, modal=True)
+    while True:
+        eventlocale, values = window.read()
+        if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
+            break
+    
+    window.close()
+
+def open_business_main_page(business):
+    businessMain = [[sg.Column([[sg.Text("Welcome " + business, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+                    sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
+                    [sg.Column([[sg.Text("Scan a QR Code to anonymously see a customers vaccination status.", background_color=bgColor2, text_color=textColor1)]], background_color=bgColor2, element_justification="center", justification="center")],
+                    [sg.Column([[sg.Button("Click Here to Scan QR Code", button_color=buttonBgColor)]], background_color=bgColor1, justification="center", element_justification="center")]]
+    window = sg.Window("Welcome " + business, businessMain, modal=True, background_color=bgColor1)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
@@ -136,8 +173,8 @@ def open_signup_window():
 
     distributorSignup = [[sg.Text("Signup as a Distributor", background_color=bgColor2, text_color=textColor1, font="Arial", size=(23,1))], 
                 [sg.HorizontalSeparator(pad=(5, 2))],
-                [sg.Text("Username:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
-                [sg.Column([[sg.Input("Username", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
+                [sg.Text("Distribution Site:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
+                [sg.Column([[sg.Input("Distribution Site", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
                 [sg.HorizontalSeparator(pad=(1, 10))],
                 [sg.Text("Password:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
                 [sg.Column([[sg.Input("", background_color=bgColor1, text_color=textColor2, password_char="*", size=(23,1))]], background_color=bgColor2)],
@@ -145,8 +182,8 @@ def open_signup_window():
 
     businessSignup = [[sg.Text("Signup as a Business", background_color=bgColor2, text_color=textColor1, font="Arial", size=(23,1))], 
                 [sg.HorizontalSeparator(pad=(5, 2))],
-                [sg.Text("Username:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
-                [sg.Column([[sg.Input("Username", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
+                [sg.Text("Business Name:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
+                [sg.Column([[sg.Input("Business Name", background_color=bgColor1, text_color=textColor2, size=(23,1))]], background_color=bgColor2)],
                 [sg.HorizontalSeparator(pad=(1, 10))],
                 [sg.Text("Password:", text_color=textColor1, background_color=bgColor2, size=(25,1))],
                 [sg.Column([[sg.Input("", background_color=bgColor1, text_color=textColor2, password_char="*", size=(23,1))]], background_color=bgColor2)],
@@ -162,6 +199,26 @@ def open_signup_window():
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
+        elif eventlocale == "Signup As Recipient":
+            window.close()
+            #update database with username and password
+            #make a user id
+            #generate qrcode
+            open_recipient_page("{{ USERNAME }}")
+            break
+        elif eventlocale == "Signup As Distributor":
+            window.close()
+            #add data to database
+            open_distributor_main_page("{{ Distributor }}")
+            break
+        elif eventlocale == "Signup As Business":
+            window.Close()
+            #add data to database
+            open_business_main_page("{{ Business }}")
+            break
+
+
+
         
     window.close()
 

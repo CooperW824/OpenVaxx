@@ -1,5 +1,4 @@
 
-from PySimpleGUI.PySimpleGUI import Button, Window
 from OpenVaxxDB import business as ovb
 from OpenVaxxDB import distributor as ovd
 from OpenVaxxDB import recipient as ovr
@@ -45,10 +44,6 @@ aboutPage = [[
         " Urna id volutpat lacus laoreet non.", s=(90, 30), text_color=textColor2, background_color=bgColor1, expand_x=True, expand_y=True, auto_size_text=True)
 ]]
 
-
-
-distributorInput = [[]]
-businessOut = [[]]
 # -- New Window Functions -- 
 
 
@@ -127,7 +122,7 @@ def open_recipient_page(username):
     window.close()
 
 def open_distributor_main_page(distributor):
-    distributorMain = [[sg.Column([[sg.Text("Welcome {{ distributor }}", font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+    distributorMain = [[sg.Column([[sg.Text("Welcome " + distributor, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
                     sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
                     [sg.Column([[sg.Text("Scan a QR Code to add/update a users vaccination status.", background_color=bgColor2, text_color=textColor1)]], background_color=bgColor2, element_justification="center", justification="center")],
                     [sg.Column([[sg.Button("Click Here to Scan QR Code", button_color=buttonBgColor)]], background_color=bgColor1, justification="center", element_justification="center")]]
@@ -136,16 +131,38 @@ def open_distributor_main_page(distributor):
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
+        elif eventlocale == "Click Here to Scan QR Code":
+            window.close()
+            open_distributor_input_page("{{ distributor }}")
+            break
 
     window.close()
 
 def open_distributor_input_page(distributor):
-    window = sg.Window(distributor + "Vaccine Info Input", distributorInput, modal=True)
+    distributorInput = [[sg.Column([[sg.Text("Enter a Recipient's Vaccine Information", font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="Center" ),
+                    sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
+                    [sg.Column([[sg.Text("Please Enter the relevant information about recipients vaccine status: ", background_color=bgColor2, text_color=textColor1, font="Arial")]], justification="center", element_justification="center", background_color=bgColor2)],
+                    [sg.Column([[sg.Text("Please Select the vaccine the recipient recived:", background_color=bgColor2, text_color=textColor1)],[sg.DropDown(["Pfizer", "Moderna", "J&J"], default_value="Choose One:", text_color=textColor2, size=(40,1), readonly=True)], 
+                    [sg.Text("Vaccine Dose 1 Distribution Date: (mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input("Dose 1 Date:", text_color=textColor1)],
+                    [sg.Text("Vaccine Dose 2 Distribution Date: ([type 'n/a' for not applicable/not yet recieved] mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input("Dose 2 Date:", text_color=textColor1)],
+                    [sg.Text("Vaccine Booster Dose Distribution Date: ([type 'n/a' for not applicable/not yet recieved] mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input("Booster Dose Date:", text_color=textColor1)],
+                    [sg.Button("Save Vaccine Information", button_color=buttonBgColor), sg.Button("Close Without Saving", button_color=buttonBgColor)]], background_color=bgColor2, justification="center", element_justification="center")]]
+    window = sg.Window(distributor + " Vaccine Info Input", distributorInput, background_color=bgColor1, modal=True)
     while True:
         eventlocale, values = window.read()
-        if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
+        if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED or eventlocale == "Close Without Saving":
+            closeNoSave = sg.PopupYesNo("Are you sure you would like to close without saving?")
+            if closeNoSave == "Yes":
+                window.close()
+                open_distributor_main_page("{{ Distributor }}")
+                break
+
+        elif eventlocale == "Save Vaccine Information":
+            #save the info to the DB
+            sg.Popup("Information Saved")
+            window.close()
+            open_distributor_main_page("{{ Distributor }}")
             break
-    
     window.close()
 
 def open_business_main_page(business):
@@ -158,7 +175,32 @@ def open_business_main_page(business):
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
+        elif eventlocale == "Click Here to Scan QR Code":
+            window.close()
+            open_business_return_page("{{ business }}")
+            break
     
+    window.close()
+
+def open_business_return_page(business):
+    #check if the person has been vaccinated
+    # and change the image and text based on their vaccine status
+    image = "OpenVaxxDB/img/fullyvaxxed.png"
+    text = "This customer is fully vaccinated and can be let in without worry."
+
+    businessOut = [[sg.Column([[sg.Text("Welcome " + business, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+                sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
+                [sg.Column([[sg.Image(image, size=(320,320), background_color=fullVaxxColor)]], justification="center", element_justification="center", background_color=bgColor1)],
+                [sg.Column([[sg.Text(text, text_color=textColor1, background_color=bgColor2)]], justification="center", element_justification="center", background_color=bgColor2)],
+                [sg.Column([[sg.Button("Close", button_color=buttonBgColor, font="Arial")]], justification="center", element_justification="center", background_color=bgColor2)]]
+    window = sg.Window("Welcome " + business, businessOut, modal=True, background_color=bgColor1)
+    while True:
+        eventLocale, values = window.read()
+        if eventLocale == "Exit" or eventLocale == sg.WIN_CLOSED:
+            break
+        elif eventLocale == "Close":
+            window.close()
+            open_business_main_page("{{ business }}")
     window.close()
 
 def open_signup_window():

@@ -1,5 +1,5 @@
 
-# Importing library
+"""# Importing library
 import qrcode
   
 # Data to encode
@@ -21,4 +21,9 @@ from pathlib import Path
 str_path = "OpenVaxxDB/qrcode.png"
 path = Path(str_path)
 
-img.save(path)
+img.save(path)"""
+
+"""import shutil
+import os
+src_path = os.getcwd() + '\\OpenVaxxDB\\qrcode.png'
+shutil.copy(src_path, r"C:/Users/coope/Documents/GitHub/OpenVaxx")"""

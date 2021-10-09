@@ -1,1 +1,1 @@
-id,userID, userType, username, passwordHash, vaccinetype, firstDose, secondDose, thirdDose
+userID, userType, username, passwordHash, vaccinetype, firstDose, secondDose, thirdDose

@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.io.pytables import SeriesFixed
 import qrcode
 import shutil
 import os
@@ -17,7 +18,7 @@ class recipient:
     
         self.username = username
         self._password_hash = hash(password)
-        self.database = self.__openDatabase("database.csv")
+        self.database = self.__openDatabase("OpenVaxxDB/database.csv")
 
         if new_user == True:
             self.signup()
@@ -34,19 +35,13 @@ class recipient:
     def signup(self):
         frontId = random.randrange(1111111111, 9999999999)
         backId = 1
-        for i in list(frontId):
-            backId *= i
-        self.userId = str(frontId) + ":" + str(backId)
-        userData = {
-            "userID": [self.userId],
-            "username": [self.username],
-            "passwordHash": [self.password_hash],
-            "vaccineType": ["n/a"],
-            "firstDose": ["n/a"],
-            "secondDose": ["n/a"],
-            "thirdDose": ["n/a"],
-        }
-        self.database = self.database.append(userData)
+        for i in str(frontId):
+            if i != "0":
+                backId *= int(i)
+        self.userId = str(frontId) + "_" + str(backId)
+        df = self.database
+        df.loc[ len(df)] = [self.userId, "Recipient", self.username, self._password_hash, "no data", "no data", "no data", "no data"] 
+        self.database = df
         self.__saveDatabase()
         self.__generate_qr(self.userId)
         #generate userID and add id, username, and password hash to DB
@@ -61,13 +56,13 @@ class recipient:
 
         return False
     
-    def __openDatabase(path:str):
+    def __openDatabase(self, path:str):
         #open and return the pandas dataframe containing the database
         return pd.read_csv(path)
 
     def __saveDatabase(self):
         #save the PD Dataframe to the CSV
-        self.database.to_csv("OpenVaxxDB/database.csv")
+        self.database.to_csv("OpenVaxxDB/database.csv", index=False)
     
     def __to_list(self, data, param):  # converts pandas dataframe to a standard list
         list1 = []

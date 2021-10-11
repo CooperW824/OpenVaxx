@@ -1,23 +1,22 @@
 import pandas as pd
-from pandas.io.pytables import SeriesFixed
 import qrcode
 import shutil
 import os
 import random
 from pathlib import Path
-
+import hashlib as hl
 class recipient:
 
     _username = ""
     _password_hash = 0
     database = pd.DataFrame()
     loginConfirm = False
-    userId = 0
+    userId = ""
 
     def __init__(self, username:str, password:str, new_user=False):
     
-        self.username = username
-        self._password_hash = hash(password)
+        self._username = username
+        self._password_hash = hl.md5(password.encode()).hexdigest()
         self.database = self.__openDatabase("OpenVaxxDB/database.csv")
 
         if new_user == True:
@@ -35,23 +34,33 @@ class recipient:
     def signup(self):
         frontId = random.randrange(1111111111, 9999999999)
         backId = 1
-        for i in str(frontId):
-            if i != "0":
-                backId *= int(i)
-        self.userId = str(frontId) + "_" + str(backId)
+        idVerified = False
+        while(idVerified == False):
+            for i in str(frontId):
+                if i != "0":
+                    backId *= int(i)
+            self.userId = str(frontId) + "_" + str(backId)
+            idList = self.__to_list(self.database, "userID")
+            inList = idList.count(self.userId)
+            if inList > 0:
+                idVerified = False
+            else:
+                idVerified = True
         df = self.database
-        df.loc[ len(df)] = [self.userId, "Recipient", self.username, self._password_hash, "no data", "no data", "no data", "no data"] 
+        df.loc[ len(df)] = [self.userId, "Recipient", self._username, self._password_hash, "no data", "no data", "no data", "no data"] 
         self.database = df
         self.__saveDatabase()
         self.__generate_qr(self.userId)
         #generate userID and add id, username, and password hash to DB
      
     
-    def login(self, username, password_hash): 
+    def login(self): 
         usernames = self.__to_list(self.database, "username")
         passwords = self.__to_list(self.database, "passwordHash")
+        userIDs = self.__to_list(self.database, "userID")
         for i in range(len(usernames)):
-            if passwords[i[0]] == username and usernames[i[0]] == password_hash:
+            if passwords[i] == self._password_hash and usernames[i] == self._username:
+                self.userId = userIDs[i]
                 return True
 
         return False
@@ -90,7 +99,7 @@ class recipient:
         img.save(path)
 
     def get_user_data(self):
-        if self.login == True:
-            return [self.userId, self.username]
+        if self.loginConfirm == True:
+            return [self.userId, self._username]
         else:
             return[False,False]

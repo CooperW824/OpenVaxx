@@ -4,6 +4,7 @@ from OpenVaxxDB import distributor as ovd
 from OpenVaxxDB import recipient as ovr
 import PySimpleGUI as sg
 
+user_var = None
 
 # -- Colors --
 bgColor1 = '#ffffff'
@@ -14,11 +15,6 @@ buttonBgColor = "#030947"
 notVaxxColor = '#e3210b'
 warningColor = '#ff9d00'
 fullVaxxColor = '#00b315'
-
-class page_layout:
-    layout_list = []
-    def __init__(self, layout:list):
-        self.layout_list = layout
 
 # -- Window Layouts -- 
 aboutPage = [[
@@ -80,7 +76,6 @@ def open_login_window():
             sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
             [sg.Column(recipentLogin, background_color=bgColor2, size=(225, 275)), sg.VSeparator(color=bgColor2), sg.Column(distributorLogin, background_color=bgColor2, size=(225, 275)), sg.VSeparator(color=bgColor2), sg.Column(businessLogin, background_color=bgColor2, size=(225, 275))]
             ]
-    layout = page_layout(loginPage)
     window = sg.Window("Login into Your OpenVaxx Account", loginPage, modal=True, background_color=bgColor1, size=(750,300))
     while True:
         eventlocale, values = window.read()
@@ -88,11 +83,16 @@ def open_login_window():
             window.close()
             break 
         elif eventlocale == "Login As Recipient":
-            window.close()
-            # check username and password
-            # raise message box if password is wrong
-            open_recipient_page("{{ USERNAME }}")
-            break  
+            user_var = ovr.recipient(values[1], values[3])
+            user_data = user_var.get_user_data()
+            if user_data == [False, False]:
+                img = "OpenVaxxDB/qrcodes/" + user_data[0] + ".png"
+                window.close()
+                open_recipient_page(user_data[1], img)
+                break  
+            else:
+                sg.popup("Invalid Username or Password, try again.")
+            
         elif eventlocale == "Login As Distributor":
             window.close() 
             #check credentials 
@@ -104,13 +104,13 @@ def open_login_window():
             open_business_main_page("{{ Business }}")
             break
 
-def open_recipient_page(username):
+def open_recipient_page(username, img_path):
     recipientPage = [
             [sg.Column([[sg.Text("Welcome " + username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
             sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
             [sg.HorizontalSeparator(bgColor2, (10, 5))],
             [sg.Text("Your Personal QR Code, have businesses scan this to see your anonomous vaccination status.", background_color=bgColor2, text_color=textColor1, justification="center")],
-            [sg.Column([[sg.Image("OpenVaxxDB/qrcode.png",size=(300, 300), background_color=bgColor1)]], justification="center", element_justification="center", background_color=bgColor1)],
+            [sg.Column([[sg.Image(img_path,size=(300, 300), background_color=bgColor1)]], justification="center", element_justification="center", background_color=bgColor1)],
             [sg.Column([[sg.Text("Choose a Place to save your QR Code: ", background_color=bgColor2, text_color=textColor1), sg.FolderBrowse("Browse Folders", key="qrCodeLoc", button_color=buttonBgColor), sg.Button("Save QR Code", button_color=buttonBgColor)]], bgColor2, justification="center", element_justification="center")]
             ]
     window = sg.Window("OpenVaxx, Welcome " + username, recipientPage, background_color=bgColor1)
@@ -242,11 +242,11 @@ def open_signup_window():
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
         elif eventlocale == "Signup As Recipient":
+            user_var = ovr.recipient(values[1], values[3], True)
+            user_data = user_var.get_user_data()
+            img = "OpenVaxxDB/qrcodes/" + user_data[0] + ".png"
             window.close()
-            #update database with username and password
-            #make a user id
-            #generate qrcode
-            open_recipient_page("{{ USERNAME }}")
+            open_recipient_page(user_data[1], img)
             break
         elif eventlocale == "Signup As Distributor":
             window.close()

@@ -85,7 +85,7 @@ def open_login_window():
         elif eventlocale == "Login As Recipient":
             user_var = ovr.recipient(values[1], values[3])
             user_data = user_var.get_user_data()
-            if user_data == [False, False]:
+            if user_data != [False, False]:
                 img = "OpenVaxxDB/qrcodes/" + user_data[0] + ".png"
                 window.close()
                 open_recipient_page(user_data[1], img)
@@ -94,15 +94,23 @@ def open_login_window():
                 sg.popup("Invalid Username or Password, try again.")
             
         elif eventlocale == "Login As Distributor":
-            window.close() 
-            #check credentials 
-            open_distributor_main_page("{{ distributor }}")
-            break
+            user_var = ovd.distributor(values[6], values[8])
+            user_data = user_var.get_user_data()
+            if user_data != [False, False]:
+                window.close()
+                open_distributor_main_page(user_data[1])
+                break  
+            else:
+                sg.popup("Invalid Username or Password, try again.")
         elif eventlocale == "Login As Business":
-            window.Close()
-            #add data to database
-            open_business_main_page("{{ Business }}")
-            break
+            user_var = ovd.distributor(values[11], values[13])
+            user_data = user_var.get_user_data()
+            if user_data != [False, False]:
+                window.close()
+                open_business_main_page(user_data[1])
+                break  
+            else:
+                sg.popup("Invalid Username or Password, try again.")      
 
 def open_recipient_page(username, img_path):
     recipientPage = [
@@ -249,14 +257,16 @@ def open_signup_window():
             open_recipient_page(user_data[1], img)
             break
         elif eventlocale == "Signup As Distributor":
+            user_var = ovd.distributor(values[6], values[8], True)
+            user_data = user_var.get_user_data()
             window.close()
-            #add data to database
-            open_distributor_main_page("{{ Distributor }}")
+            open_distributor_main_page(user_data[1])
             break
         elif eventlocale == "Signup As Business":
+            user_var = ovb.business(values[11], values[13], True)
+            user_data = user_var.get_user_data()
             window.Close()
-            #add data to database
-            open_business_main_page("{{ Business }}")
+            open_business_main_page(user_data[1])
             break
 
 

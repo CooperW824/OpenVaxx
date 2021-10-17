@@ -115,6 +115,3 @@ dmypy.json
 
 #vscode
 .vscode/
-
-#qrcode
-OpenVaxxDB/qrcodes/

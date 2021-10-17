@@ -1,3 +1,4 @@
 userID,userType,username,passwordHash,vaccinetype,firstDose,secondDose,thirdDose
-8238893227_2322432,Recipient,test124,ad2af2578b4d55b5f78383024270f852,no data,no data,no data,no data
-5059511827_126000,Recipient,cooper,ae2b1fca515949e5d54fb22b8ed95575,no data,no data,no data,no data
+8053281918_138240,Recipient,test,098f6bcd4621d373cade4e832627b4f6,no data,no data,no data,no data
+6009923809_209952,Distributor,wallgreens,098f6bcd4621d373cade4e832627b4f6,not applicable,not applicable,not applicable,not applicable
+3020740137_3528,Business,Home Depot,098f6bcd4621d373cade4e832627b4f6,not applicable,not applicable,not applicable,not applicable

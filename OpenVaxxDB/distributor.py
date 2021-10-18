@@ -1,6 +1,9 @@
 import pandas as pd
 import random
 import hashlib as hl
+import cv2
+import numpy as np
+from pyzbar.pyzbar import decode
 class distributor:
 
     _username = ""
@@ -8,6 +11,7 @@ class distributor:
     database = pd.DataFrame()
     loginConfirm = False
     userId = ""
+    scannedID = ""
 
     def __init__(self, username:str, password:str, new_user=False):
     
@@ -69,8 +73,60 @@ class distributor:
 
         return list1
 
-    def get_user_data(self):
-        if self.loginConfirm == True:
-            return [self.userId, self._username]
+    def __decoder(image) -> str:
+        gray_img = cv2.cvtColor(image,0)
+        barcode = decode(gray_img)
+
+        for obj in barcode:
+            points = obj.polygon
+            pts = np.array(points, np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            cv2.polylines(image, [pts], True, (0, 255, 0), 3)
+
+            barcodeData = obj.data.decode("utf-8")
+            return barcodeData
+
+
+    def __validate_data(data:str) -> bool:
+        if data != None:
+            dataArr = data.split("_")
+            checksum = 1
+            for i in dataArr[0]:
+                if i != "0":
+                    checksum *= int(i)
+            if str(checksum) == dataArr[1]:
+                return True
+            else:
+                return False 
         else:
-            return[False,False]
+            return False
+
+    def scan_qrcode(self):
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        dataValid = False
+
+        while not dataValid:
+            ret, frame = cap.read()
+            data = self.__decoder(frame)
+            cv2.imshow('Image', frame)
+            dataValid = self.__validate_data(data)
+            if dataValid:
+               self.scannedID = data
+            code = cv2.waitKey(10)
+            if code == ord('x'):
+                break
+
+    def read_vaccine_info(self):
+        df = self.database
+        userIDs = self.__to_list(self.database, "userID")
+        types = ["Pfizer", "Moderna", "J&J"]
+        for i in range(len(userIDs)):
+            if userIDs[i] == self.scannedID:
+                return [types.index(df["vaccineType"][i]), df["firstDose"][i], df["secondDose"][i], df["thirdDose"][i] ]
+
+    def update_vaccine_info(self, vaxxType, dose1date, dose2date, dose3date):
+        df = self.database()
+        userIDs = self.__to_list(self.database, "userID")
+        for i in range(len(userIDs)):
+            if userIDs[i] == self.scannedID:
+                df.loc[i] = [self.scannedID, "Distributor", self._username, self._password_hash, vaxxType, dose1date, dose2date, dose3date]

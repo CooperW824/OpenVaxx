@@ -27,3 +27,14 @@ img.save(path)"""
 import os
 src_path = os.getcwd() + '\\OpenVaxxDB\\qrcode.png'
 shutil.copy(src_path, r"C:/Users/coope/Documents/GitHub/OpenVaxx")"""
+
+import cv2
+
+capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+while True:
+    ret, frame = capture.read()
+    cv2.imshow('OpenVaxx Scanner', frame)
+    code = cv2.waitKey(10)
+    if code == ord('q'):
+        break

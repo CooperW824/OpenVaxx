@@ -73,7 +73,7 @@ class distributor:
 
         return list1
 
-    def __decoder(image) -> str:
+    def __decoder(self, image) -> str:
         gray_img = cv2.cvtColor(image,0)
         barcode = decode(gray_img)
 
@@ -87,7 +87,7 @@ class distributor:
             return barcodeData
 
 
-    def __validate_data(data:str) -> bool:
+    def __validate_data(self, data:str) -> bool:
         if data != None:
             dataArr = data.split("_")
             checksum = 1
@@ -115,6 +115,7 @@ class distributor:
             code = cv2.waitKey(10)
             if code == ord('x'):
                 break
+        cv2.destroyAllWindows()
 
     def read_vaccine_info(self):
         df = self.database
@@ -122,11 +123,12 @@ class distributor:
         types = ["Pfizer", "Moderna", "J&J"]
         for i in range(len(userIDs)):
             if userIDs[i] == self.scannedID:
-                return [types.index(df["vaccineType"][i]), df["firstDose"][i], df["secondDose"][i], df["thirdDose"][i] ]
+                return [df["vaccineType"][i], df["firstDose"][i], df["secondDose"][i], df["thirdDose"][i], [df["username"][i], df["passwordHash"][i]]]
 
-    def update_vaccine_info(self, vaxxType, dose1date, dose2date, dose3date):
-        df = self.database()
+    def update_vaccine_info(self, vaxxType, dose1date, dose2date, dose3date, user_Data:list):
+        df = self.database
         userIDs = self.__to_list(self.database, "userID")
         for i in range(len(userIDs)):
             if userIDs[i] == self.scannedID:
-                df.loc[i] = [self.scannedID, "Distributor", self._username, self._password_hash, vaxxType, dose1date, dose2date, dose3date]
+                df.loc[i] = [self.scannedID, "Recipient", user_Data[0], user_Data[1], vaxxType, dose1date, dose2date, dose3date]
+        self.__saveDatabase()

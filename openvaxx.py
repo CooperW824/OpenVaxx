@@ -95,10 +95,9 @@ def open_login_window():
             
         elif eventlocale == "Login As Distributor":
             user_var = ovd.distributor(values[6], values[8])
-            user_data = user_var.get_user_data()
-            if user_data != [False, False]:
+            if user_var.loginConfirm:
                 window.close()
-                open_distributor_main_page(user_data[1])
+                open_distributor_main_page(user_var)
                 break  
             else:
                 sg.popup("Invalid Username or Password, try again.")
@@ -129,47 +128,54 @@ def open_recipient_page(username, img_path):
     
     window.close()
 
-def open_distributor_main_page(distributor):
-    distributorMain = [[sg.Column([[sg.Text("Welcome " + distributor, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+def open_distributor_main_page(dist: ovd.distributor):
+    
+    distributorMain = [[sg.Column([[sg.Text("Welcome " + dist._username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
                     sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
                     [sg.Column([[sg.Text("Scan a QR Code to add/update a users vaccination status.", background_color=bgColor2, text_color=textColor1)]], background_color=bgColor2, element_justification="center", justification="center")],
                     [sg.Column([[sg.Button("Click Here to Scan QR Code", button_color=buttonBgColor)]], background_color=bgColor1, justification="center", element_justification="center")]]
-    window = sg.Window("Welcome " + distributor, distributorMain, modal=True, background_color=bgColor1)
+    window = sg.Window("Welcome " + dist._username, distributorMain, modal=True, background_color=bgColor1)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
         elif eventlocale == "Click Here to Scan QR Code":
             window.close()
-            open_distributor_input_page("{{ distributor }}")
+            dist.scan_qrcode()
+            open_distributor_input_page(dist)
             break
 
     window.close()
 
-def open_distributor_input_page(distributor):
+def open_distributor_input_page(dist:ovd.distributor):
+    vaccineInfo  = dist.read_vaccine_info()
+    if vaccineInfo[0] == "no data":
+        defaultVal = "Choose One:"
+    else:
+        defaultVal = vaccineInfo[0]
     distributorInput = [[sg.Column([[sg.Text("Enter a Recipient's Vaccine Information", font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="Center" ),
                     sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
                     [sg.Column([[sg.Text("Please Enter the relevant information about recipients vaccine status: ", background_color=bgColor2, text_color=textColor1, font="Arial")]], justification="center", element_justification="center", background_color=bgColor2)],
-                    [sg.Column([[sg.Text("Please Select the vaccine the recipient recived:", background_color=bgColor2, text_color=textColor1)],[sg.DropDown(["Pfizer", "Moderna", "J&J"], default_value="Choose One:", text_color=textColor2, size=(40,1), readonly=True)], 
-                    [sg.Text("Vaccine Dose 1 Distribution Date: (mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input("Dose 1 Date:", text_color=textColor1)],
-                    [sg.Text("Vaccine Dose 2 Distribution Date: ([type 'n/a' for not applicable/not yet recieved] mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input("Dose 2 Date:", text_color=textColor1)],
-                    [sg.Text("Vaccine Booster Dose Distribution Date: ([type 'n/a' for not applicable/not yet recieved] mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input("Booster Dose Date:", text_color=textColor1)],
+                    [sg.Column([[sg.Text("Please Select the vaccine the recipient recived:", background_color=bgColor2, text_color=textColor1)],[sg.DropDown(["Pfizer", "Moderna", "J&J"], default_value=defaultVal, text_color=textColor2, size=(40,1), readonly=True,)], 
+                    [sg.Text("Vaccine Dose 1 Distribution Date: (mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input(vaccineInfo[1], text_color=textColor2)],
+                    [sg.Text("Vaccine Dose 2 Distribution Date: ([type 'no data' for not applicable/not yet recieved] mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input(vaccineInfo[2], text_color=textColor2)],
+                    [sg.Text("Vaccine Booster Dose Distribution Date: ([type 'no data' for not applicable/not yet recieved] mm/dd/yyyy)", text_color=textColor1, background_color=bgColor2)], [sg.Input(vaccineInfo[3], text_color=textColor2)],
                     [sg.Button("Save Vaccine Information", button_color=buttonBgColor), sg.Button("Close Without Saving", button_color=buttonBgColor)]], background_color=bgColor2, justification="center", element_justification="center")]]
-    window = sg.Window(distributor + " Vaccine Info Input", distributorInput, background_color=bgColor1, modal=True)
+    window = sg.Window(dist._username + " Vaccine Info Input", distributorInput, background_color=bgColor1, modal=True)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED or eventlocale == "Close Without Saving":
             closeNoSave = sg.PopupYesNo("Are you sure you would like to close without saving?")
             if closeNoSave == "Yes":
                 window.close()
-                open_distributor_main_page("{{ Distributor }}")
+                open_distributor_main_page(dist)
                 break
 
         elif eventlocale == "Save Vaccine Information":
-            #save the info to the DB
+            dist.update_vaccine_info(values[0], values[1], values[2], values[3], vaccineInfo[4])
             sg.Popup("Information Saved")
             window.close()
-            open_distributor_main_page("{{ Distributor }}")
+            open_distributor_main_page(dist)
             break
     window.close()
 
@@ -258,9 +264,8 @@ def open_signup_window():
             break
         elif eventlocale == "Signup As Distributor":
             user_var = ovd.distributor(values[6], values[8], True)
-            user_data = user_var.get_user_data()
             window.close()
-            open_distributor_main_page(user_data[1])
+            open_distributor_main_page(user_var)
             break
         elif eventlocale == "Signup As Business":
             user_var = ovb.business(values[11], values[13], True)

@@ -125,6 +125,8 @@ def open_recipient_page(username, img_path):
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
+        if eventlocale == "Save QR Code":
+            
     
     window.close()
 
@@ -179,35 +181,47 @@ def open_distributor_input_page(dist:ovd.distributor):
             break
     window.close()
 
-def open_business_main_page(business):
-    businessMain = [[sg.Column([[sg.Text("Welcome " + business, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+def open_business_main_page(busi: ovb.business):
+    businessMain = [[sg.Column([[sg.Text("Welcome " + busi._username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
                     sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
                     [sg.Column([[sg.Text("Scan a QR Code to anonymously see a customers vaccination status.", background_color=bgColor2, text_color=textColor1)]], background_color=bgColor2, element_justification="center", justification="center")],
                     [sg.Column([[sg.Button("Click Here to Scan QR Code", button_color=buttonBgColor)]], background_color=bgColor1, justification="center", element_justification="center")]]
-    window = sg.Window("Welcome " + business, businessMain, modal=True, background_color=bgColor1)
+    window = sg.Window("Welcome " + busi._username, businessMain, modal=True, background_color=bgColor1)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
         elif eventlocale == "Click Here to Scan QR Code":
             window.close()
-            open_business_return_page("{{ business }}")
+            busi.scan_qrcode()
+            open_business_return_page(busi)
             break
     
     window.close()
 
-def open_business_return_page(business):
-    #check if the person has been vaccinated
-    # and change the image and text based on their vaccine status
-    image = "OpenVaxxDB/img/fullyvaxxed.png"
-    text = "This customer is fully vaccinated and can be let in without worry."
+def open_business_return_page(busi: ovb.business):
+    vaxxInfo = busi.read_vaccine_info()
+    if vaxxInfo == False:
+        image = "OpenVaxxDB/img/nonVax.png"
+        text = "This customer is not fully vaccinated against COVID-19 use discression when admitting them."
+    else:
+        status = busi.get_vaxx_status(vaxxInfo)
+        if status == 2:
+            image = "OpenVaxxDB/img/fullyvaxxed.png"
+            text = "This customer is fully vaccinated against COVID-19 and can be let in without worry."
+        elif status == 1:
+            image = "OpenVaxxDB/img/warning.png"
+            text = "This customer has had 1 dose of a 2 dose vaccine OR has not yet fufilled the waitng period of 2 weeks after their final dose."
+        else:
+            image = "OpenVaxxDB/img/nonVax.png"
+            text = "This customer has not been vaccinated against COVID-19 use discression when admitting them."
 
-    businessOut = [[sg.Column([[sg.Text("Welcome " + business, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+    businessOut = [[sg.Column([[sg.Text("Welcome " + busi._username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
                 sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
                 [sg.Column([[sg.Image(image, size=(320,320), background_color=fullVaxxColor)]], justification="center", element_justification="center", background_color=bgColor1)],
                 [sg.Column([[sg.Text(text, text_color=textColor1, background_color=bgColor2)]], justification="center", element_justification="center", background_color=bgColor2)],
                 [sg.Column([[sg.Button("Close", button_color=buttonBgColor, font="Arial")]], justification="center", element_justification="center", background_color=bgColor2)]]
-    window = sg.Window("Welcome " + business, businessOut, modal=True, background_color=bgColor1)
+    window = sg.Window("Welcome " + busi._username, businessOut, modal=True, background_color=bgColor1)
     while True:
         eventLocale, values = window.read()
         if eventLocale == "Exit" or eventLocale == sg.WIN_CLOSED:

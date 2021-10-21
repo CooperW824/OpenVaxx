@@ -1,6 +1,10 @@
+import datetime as dt
 import pandas as pd
 import random
 import hashlib as hl
+import numpy as np
+import cv2
+from pyzbar.pyzbar import decode
 class business:
 
     _username = ""
@@ -74,3 +78,81 @@ class business:
             return [self.userId, self._username]
         else:
             return[False,False]
+    def __decoder(self, image) -> str:
+        gray_img = cv2.cvtColor(image,0)
+        barcode = decode(gray_img)
+
+        for obj in barcode:
+            points = obj.polygon
+            pts = np.array(points, np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            cv2.polylines(image, [pts], True, (0, 255, 0), 3)
+
+            barcodeData = obj.data.decode("utf-8")
+            return barcodeData
+
+
+    def __validate_data(self, data:str) -> bool:
+        if data != None:
+            dataArr = data.split("_")
+            checksum = 1
+            for i in dataArr[0]:
+                if i != "0":
+                    checksum *= int(i)
+            if str(checksum) == dataArr[1]:
+                return True
+            else:
+                return False 
+        else:
+            return False
+
+    def scan_qrcode(self):
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        dataValid = False
+
+        while not dataValid:
+            ret, frame = cap.read()
+            data = self.__decoder(frame)
+            cv2.imshow('Image', frame)
+            dataValid = self.__validate_data(data)
+            if dataValid:
+               self.scannedID = data
+            code = cv2.waitKey(10)
+            if code == ord('x'):
+                break
+        cv2.destroyAllWindows()
+
+    def read_vaccine_info(self):
+        df = self.database
+        userIDs = self.__to_list(self.database, "userID")
+        for i in range(len(userIDs)):
+            if userIDs[i] == self.scannedID:
+                return [df["vaccineType"][i], df["firstDose"][i], df["secondDose"][i], df["thirdDose"][i]]
+        return False
+
+    def get_vaxx_status(self, vaxxInfo: list[str, str, str, str]) -> int:
+
+        if vaxxInfo[0] == "Pfizer" or vaxxInfo[0] == "Moderna":
+            if vaxxInfo[1] != "no data" and vaxxInfo[2] == "no data":
+                return 1
+            else: 
+                d1 = vaxxInfo[2].split("/")
+                d1 = dt.datetime(d1[2], d1[0], d1[1])
+                now = dt.datetime.now()
+                delta = now - d1
+                if delta.days >= 14:
+                    return 2
+                else:
+                    return 1
+        else:
+            if vaxxInfo[1] == "no data":
+                return 0
+            else:
+                d1 = vaxxInfo[1].split("/")
+                d1 = dt.datetime(d1[2], d1[0], d1[1])
+                now = dt.datetime.now()
+                delta = now - d1
+                if delta.days >= 14:
+                   return 2
+                else:
+                   return 1 

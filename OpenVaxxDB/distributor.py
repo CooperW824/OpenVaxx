@@ -120,11 +120,11 @@ class distributor:
     def read_vaccine_info(self):
         df = self.database
         userIDs = self.__to_list(self.database, "userID")
-        types = ["Pfizer", "Moderna", "J&J"]
         for i in range(len(userIDs)):
             if userIDs[i] == self.scannedID:
                 return [df["vaccineType"][i], df["firstDose"][i], df["secondDose"][i], df["thirdDose"][i], [df["username"][i], df["passwordHash"][i]]]
-
+                
+    # TODO: add validation for the inputs, they should be dates and in mm/dd/yyyy
     def update_vaccine_info(self, vaxxType, dose1date, dose2date, dose3date, user_Data:list):
         df = self.database
         userIDs = self.__to_list(self.database, "userID")

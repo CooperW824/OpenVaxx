@@ -20,7 +20,7 @@ fullVaxxColor = '#00b315'
 aboutPage = [[
     sg.Column([[
         sg.Column(
-        [[sg.Text("OpenVaxx Vaccine Passport Demo", (45, 1), text_color=textColor1, font="Arial", background_color=bgColor2)]],
+        [[sg.Text("OpenVaxx Vaccine Passport Demo", (60, 1), text_color=textColor1, font="Arial", background_color=bgColor2)]],
          background_color=bgColor2
          ),
     sg.Column(
@@ -88,7 +88,7 @@ def open_login_window():
             if user_data != [False, False]:
                 img = "OpenVaxxDB/qrcodes/" + user_data[0] + ".png"
                 window.close()
-                open_recipient_page(user_data[1], img)
+                open_recipient_page(user_var, img)
                 break  
             else:
                 sg.popup("Invalid Username or Password, try again.")
@@ -103,30 +103,30 @@ def open_login_window():
                 sg.popup("Invalid Username or Password, try again.")
         elif eventlocale == "Login As Business":
             user_var = ovd.distributor(values[11], values[13])
-            user_data = user_var.get_user_data()
             if user_data != [False, False]:
                 window.close()
-                open_business_main_page(user_data[1])
+                open_business_main_page(user_var)
                 break  
             else:
                 sg.popup("Invalid Username or Password, try again.")      
 
-def open_recipient_page(username, img_path):
+def open_recipient_page(user: ovr.recipient, img_path):
     recipientPage = [
-            [sg.Column([[sg.Text("Welcome " + username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
+            [sg.Column([[sg.Text("Welcome " + user._username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
             sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
             [sg.HorizontalSeparator(bgColor2, (10, 5))],
             [sg.Text("Your Personal QR Code, have businesses scan this to see your anonomous vaccination status.", background_color=bgColor2, text_color=textColor1, justification="center")],
             [sg.Column([[sg.Image(img_path,size=(300, 300), background_color=bgColor1)]], justification="center", element_justification="center", background_color=bgColor1)],
             [sg.Column([[sg.Text("Choose a Place to save your QR Code: ", background_color=bgColor2, text_color=textColor1), sg.FolderBrowse("Browse Folders", key="qrCodeLoc", button_color=buttonBgColor), sg.Button("Save QR Code", button_color=buttonBgColor)]], bgColor2, justification="center", element_justification="center")]
             ]
-    window = sg.Window("OpenVaxx, Welcome " + username, recipientPage, background_color=bgColor1)
+    window = sg.Window("OpenVaxx, Welcome " + user._username, recipientPage, background_color=bgColor1)
     while True:
         eventlocale, values = window.read()
         if eventlocale == "Exit" or eventlocale == sg.WIN_CLOSED:
             break
         if eventlocale == "Save QR Code":
-            
+            user_data = user.get_user_data()
+            user.save_qr_code(user_data[0], values['qrCodeLoc'])
     
     window.close()
 
@@ -174,11 +174,15 @@ def open_distributor_input_page(dist:ovd.distributor):
                 break
 
         elif eventlocale == "Save Vaccine Information":
-            dist.update_vaccine_info(values[0], values[1], values[2], values[3], vaccineInfo[4])
-            sg.Popup("Information Saved")
-            window.close()
-            open_distributor_main_page(dist)
-            break
+            inputCorrect = dist.validate_input(values[1], values[2], values[3])
+            if inputCorrect == False:
+                sg.popup("Invalid data entered please double check inputs.")
+            else:
+                dist.update_vaccine_info(values[0], values[1], values[2], values[3], vaccineInfo[4])
+                sg.Popup("Information Saved Successfully")
+                window.close()
+                open_distributor_main_page(dist)
+                break
     window.close()
 
 def open_business_main_page(busi: ovb.business):

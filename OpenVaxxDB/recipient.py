@@ -27,7 +27,7 @@ class recipient:
 
 
     def save_qr_code(self, userID, path_to_save_to):
-        src_path = os.getcwd() + "\\" + userID + ".png"
+        src_path = os.getcwd() + "\\OpenVaxxDB\\qrcodes\\" + userID + ".png"
         shutil.copyfile(src_path, path_to_save_to)
         
 

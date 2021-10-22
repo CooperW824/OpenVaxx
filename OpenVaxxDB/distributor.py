@@ -4,6 +4,8 @@ import hashlib as hl
 import cv2
 import numpy as np
 from pyzbar.pyzbar import decode
+import re
+import datetime
 class distributor:
 
     _username = ""
@@ -132,3 +134,38 @@ class distributor:
             if userIDs[i] == self.scannedID:
                 df.loc[i] = [self.scannedID, "Recipient", user_Data[0], user_Data[1], vaxxType, dose1date, dose2date, dose3date]
         self.__saveDatabase()
+
+    def validate_input(self, dose1date: str, dose2date: str, dose3date: str):
+        dose1date = dose1date.split("/")
+        dose2date = dose2date.split("/")
+        dose3date = dose3date.split("/")
+        
+        correctDates = None
+        try:
+            newDate = datetime.datetime(int(dose1date[2]),int(dose1date[0]),int(dose1date[1]))
+            correctDate = True
+        except:
+            if dose1date[0] == "no data" or dose1date[0] == "No Data":
+                correctDate = True
+            else:
+                correctDate = False
+
+        try:
+            newDate = datetime.datetime(int(dose2date[2]), int(dose2date[0]),int(dose2date[1]))
+            correctDate = True
+        except:
+            if dose2date[0] == "no data" or dose1date[0] == "No Data":
+                correctDate = True
+            else:
+                correctDate = False
+
+        try:
+            newDate = datetime.datetime(int(dose3date[2]), int(dose3date[0]), int(dose3date[1]))
+            correctDate = True
+        except:
+            if dose3date[0] == "no data" or dose1date[0] == "No Data":
+                correctDate = True
+            else:
+                correctDate = False
+        return correctDate
+

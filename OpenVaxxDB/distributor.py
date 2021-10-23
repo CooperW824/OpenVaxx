@@ -4,7 +4,6 @@ import hashlib as hl
 import cv2
 import numpy as np
 from pyzbar.pyzbar import decode
-import re
 import datetime
 class distributor:
 
@@ -126,7 +125,7 @@ class distributor:
             if userIDs[i] == self.scannedID:
                 return [df["vaccineType"][i], df["firstDose"][i], df["secondDose"][i], df["thirdDose"][i], [df["username"][i], df["passwordHash"][i]]]
                 
-    # TODO: add validation for the inputs, they should be dates and in mm/dd/yyyy
+    
     def update_vaccine_info(self, vaxxType, dose1date, dose2date, dose3date, user_Data:list):
         df = self.database
         userIDs = self.__to_list(self.database, "userID")

@@ -102,8 +102,8 @@ def open_login_window():
             else:
                 sg.popup("Invalid Username or Password, try again.")
         elif eventlocale == "Login As Business":
-            user_var = ovd.distributor(values[11], values[13])
-            if user_data != [False, False]:
+            user_var = ovb.business(values[11], values[13])
+            if user_var.loginConfirm:
                 window.close()
                 open_business_main_page(user_var)
                 break  
@@ -126,7 +126,8 @@ def open_recipient_page(user: ovr.recipient, img_path):
             break
         if eventlocale == "Save QR Code":
             user_data = user.get_user_data()
-            user.save_qr_code(user_data[0], values['qrCodeLoc'])
+            returnVal = user.save_qr_code(user_data[0], values['qrCodeLoc'])
+            sg.popup(returnVal)
     
     window.close()
 
@@ -222,7 +223,7 @@ def open_business_return_page(busi: ovb.business):
 
     businessOut = [[sg.Column([[sg.Text("Welcome " + busi._username, font="Arial", size=(45, 1), text_color=textColor1, background_color=bgColor2, pad=(100, 1))]], background_color=bgColor2, size=(500, 30), justification="left", element_justification="left"),
                 sg.Column([[sg.Button("Exit", button_color=buttonBgColor, font="Arial")]], justification="right", background_color=bgColor1, pad=(25,1))],
-                [sg.Column([[sg.Image(image, size=(320,320), background_color=fullVaxxColor)]], justification="center", element_justification="center", background_color=bgColor1)],
+                [sg.Column([[sg.Image(image, size=(320,320), background_color=bgColor1)]], justification="center", element_justification="center", background_color=bgColor1)],
                 [sg.Column([[sg.Text(text, text_color=textColor1, background_color=bgColor2)]], justification="center", element_justification="center", background_color=bgColor2)],
                 [sg.Column([[sg.Button("Close", button_color=buttonBgColor, font="Arial")]], justification="center", element_justification="center", background_color=bgColor2)]]
     window = sg.Window("Welcome " + busi._username, businessOut, modal=True, background_color=bgColor1)
@@ -232,7 +233,7 @@ def open_business_return_page(busi: ovb.business):
             break
         elif eventLocale == "Close":
             window.close()
-            open_business_main_page("{{ business }}")
+            open_business_main_page(busi)
     window.close()
 
 def open_signup_window():
@@ -287,9 +288,8 @@ def open_signup_window():
             break
         elif eventlocale == "Signup As Business":
             user_var = ovb.business(values[11], values[13], True)
-            user_data = user_var.get_user_data()
             window.Close()
-            open_business_main_page(user_data[1])
+            open_business_main_page(user_var)
             break
 
 

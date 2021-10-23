@@ -73,11 +73,6 @@ class business:
 
         return list1
 
-    def get_user_data(self):
-        if self.loginConfirm == True:
-            return [self.userId, self._username]
-        else:
-            return[False,False]
     def __decoder(self, image) -> str:
         gray_img = cv2.cvtColor(image,0)
         barcode = decode(gray_img)
@@ -137,7 +132,7 @@ class business:
                 return 1
             else: 
                 d1 = vaxxInfo[2].split("/")
-                d1 = dt.datetime(d1[2], d1[0], d1[1])
+                d1 = dt.datetime(int(d1[2]), int(d1[0]), int(d1[1]))
                 now = dt.datetime.now()
                 delta = now - d1
                 if delta.days >= 14:
@@ -149,7 +144,7 @@ class business:
                 return 0
             else:
                 d1 = vaxxInfo[1].split("/")
-                d1 = dt.datetime(d1[2], d1[0], d1[1])
+                d1 = dt.datetime(int(d1[2]), int(d1[0]), int(d1[1]))
                 now = dt.datetime.now()
                 delta = now - d1
                 if delta.days >= 14:

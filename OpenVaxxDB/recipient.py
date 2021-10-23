@@ -27,8 +27,12 @@ class recipient:
 
 
     def save_qr_code(self, userID, path_to_save_to):
-        src_path = os.getcwd() + "\\OpenVaxxDB\\qrcodes\\" + userID + ".png"
-        shutil.copyfile(src_path, path_to_save_to)
+        try:
+            src_path = os.getcwd() + "\\OpenVaxxDB\\qrcodes\\" + userID + ".png"
+            shutil.copyfile(src_path, path_to_save_to)
+            return "QR Code Saved Succesfully"
+        except:
+            return "Could not save QR Code, try again later."
         
 
     def signup(self):

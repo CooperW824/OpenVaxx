@@ -278,7 +278,7 @@ def open_signup_window():
             user_data = user_var.get_user_data()
             img = "OpenVaxxDB/qrcodes/" + user_data[0] + ".png"
             window.close()
-            open_recipient_page(user_data[1], img)
+            open_recipient_page(user_var, img)
             break
         elif eventlocale == "Signup As Distributor":
             user_var = ovd.distributor(values[6], values[8], True)

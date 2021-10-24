@@ -28,7 +28,7 @@ Then use command:
 
 To install the various modules needed for the program you can run the pip command below from the shell.
 
--       $ python3 -m pip install pandas numpy qrcode opencv-python pyzbar pysimplegui
+-       $ python3 -m pip install pandas numpy qrcode opencv-python pyzbar pysimplegui pillow
 
 **Disclaimer: Pyzbar on windows needs some certain DLLs they can be found on Microsoft's website, download the one required for your version of python (32bit or 64bit): [https://www.microsoft.com/en-US/download/details.aspx?id=40784](https://www.microsoft.com/en-US/download/details.aspx?id=40784)**
 This will install needed modules for the project to run.
@@ -39,4 +39,4 @@ The project can now be run like any other python project
 
 While inside the VENV run the command
 
-        python3 -m openvaxx.py
+        python3 -m openvaxx

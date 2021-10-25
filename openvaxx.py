@@ -31,13 +31,11 @@ aboutPage = [[
         ]], background_color=bgColor2),
         ],
         [sg.HorizontalSeparator(bgColor2)],
-         [sg.Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." + 
-        "Lobortis feugiat vivamus at augue. Pulvinar elementum integer enim neque volutpat ac tincidunt vitae semper. "+
-        "Cras fermentum odio eu feugiat pretium nibh ipsum consequat nisl. Id leo in vitae turpis massa. Nisi lacus sed viverra tellus in hac habitasse" +
-        " platea dictumst. Amet facilisis magna etiam tempor orci. Id cursus metus aliquam eleifend mi in nulla posuere. Aenean pharetra magna ac placerat. " +
-        "Lacinia at quis risus sed. Lorem mollis aliquam ut porttitor leo a diam sollicitudin tempor. Tristique sollicitudin nibh sit amet commodo nulla facilisi. " +
-        "Interdum velit laoreet id donec ultrices. Euismod quis viverra nibh cras. Arcu cursus vitae congue mauris. Egestas integer eget aliquet nibh." +
-        " Urna id volutpat lacus laoreet non.", s=(90, 30), text_color=textColor2, background_color=bgColor1, expand_x=True, expand_y=True, auto_size_text=True)
+         [sg.Text("OpenVaxx is an app designed to demonstrate how a vaccine passport in the US could work on a large scale.\
+                   \n\nThe app is currently only a local desktop app, and has no connection to the internet.\
+                   \n\nThe app that would be given to the American Public would be fairly different, with different mediums for recipients, distributors, and businesses.\
+                   \n\nIt would have a central database that would be encrypted to ensure full privacy, and would be featured as a website, mobile app, and desktop app for ease of use.",
+                    s=(90, 30), text_color=textColor2, background_color=bgColor1, expand_x=True, expand_y=True, auto_size_text=True)
 ]]
 
 # -- New Window Functions -- 
